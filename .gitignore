@@ -1,0 +1,6 @@
+.env/
+.vscode/
+notebooks/
+**/__pycache__/
+
+config.json
