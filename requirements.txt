@@ -1,3 +1,8 @@
+accelerate
+datasets
+discord.py
+evaluate
+flash-attention
 ipykernel
 jupyter
 langchain
@@ -8,11 +13,13 @@ langchain-openai
 nltk
 numpy
 pandas
+peft
 python-dotenv
 rich
 rich-cli
 scikit-learn
 spacy
+streamlit
 textual
 torch
 torchvision
