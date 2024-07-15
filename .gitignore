@@ -1,8 +1,7 @@
+**/__pycache__/
 .data/
-.env/
+.env
 .raw_data/
 .vscode/
-notebooks/
-**/__pycache__/
-
 config.json
+notebooks/

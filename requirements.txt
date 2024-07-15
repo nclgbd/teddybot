@@ -1,4 +1,5 @@
 accelerate
+adapters
 datasets
 discord.py
 evaluate
@@ -24,3 +25,4 @@ textual
 torch
 torchvision
 transformers
+wandb

@@ -12,7 +12,7 @@ from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_anthropic import ChatAnthropic
 from langchain_huggingface import HuggingFacePipeline
 
-from chatbot import initialize_simple_chat
+from chatbot import initialize_simple_chat, create_llm
 from utils import *
 
 console = setup()
@@ -38,8 +38,11 @@ async def on_message(message: Message):
         return
     if user.bot == False:
         if client.user.mentioned_in(message):
-
-            llm = ChatAnthropic(model="claude-3-sonnet-20240229")
+            model_name = "claude-3-sonnet-20240229"
+            adapter_name = None
+            llm = create_llm(
+                mode="anthropic", model_name=model_name, adapter_name=adapter_name
+            )
             human_input = HumanMessage(content=content)
             chat_history.add_user_message(human_input)
             async with channel.typing():
