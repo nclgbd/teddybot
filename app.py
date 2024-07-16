@@ -1,13 +1,18 @@
-# This example requires the 'message_content' intent.
-import os
+import argparse
 import discord
+import hydra
 import logging
-from discord import Message
+import os
 from dotenv import dotenv_values
-from discord.ext import commands
+from omegaconf import DictConfig, OmegaConf
 from rich.logging import RichHandler
 from rich.markdown import Markdown
 
+# discord
+from discord import Message
+from discord.ext import commands
+
+# langchain
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain_anthropic import ChatAnthropic
 from langchain_huggingface import HuggingFacePipeline
@@ -16,12 +21,13 @@ from chatbot import initialize_simple_chat, create_llm
 from utils import *
 
 console = setup()
+logger = logging.getLogger("discord")
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-# bot = commands.Bot(command_prefix="/", intents=intents)
 client = discord.Client(intents=intents)
+chat_history = initialize_simple_chat()
 
 
 @client.event
@@ -38,10 +44,10 @@ async def on_message(message: Message):
         return
     if user.bot == False:
         if client.user.mentioned_in(message):
-            model_name = "claude-3-sonnet-20240229"
-            adapter_name = None
+            # model_name = "claude-3-sonnet-20240229"
+            # adapter_name = None
             llm = create_llm(
-                mode="anthropic", model_name=model_name, adapter_name=adapter_name
+                mode=mode, model_name=model_name, adapter_name=adapter_name
             )
             human_input = HumanMessage(content=content)
             chat_history.add_user_message(human_input)
@@ -57,13 +63,29 @@ async def on_message(message: Message):
             await channel.send("pong")
 
 
-if __name__ == "__main__":
+def main():
     level = logging.INFO
-    logger = logging.getLogger("discord")
     logger.setLevel(level)
     handler = RichHandler(level=level, console=console)
+    formatter = logging.Formatter("%(asctime)s-%(levelname)s:%(message)s")
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
+    client.run(os.getenv("BOT_TOKEN"), log_handler=handler, log_level=level)
 
-    chat_history = initialize_simple_chat()
-    discord_token = os.getenv("BOT_TOKEN")
-    client.run(discord_token, log_handler=handler, log_level=level)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Runs the TEDDI bot application on Discord.")
+    parser.add_argument(
+        "--config_file",
+        type=str,
+        default="configs/local.yaml",
+        help="Path to the configuration file.",
+    )
+    args: argparse.Namespace = parser.parse_args()
+    config_file: str = args.config_file
+    cfg = OmegaConf.load(config_file)
+    model_cfg: dict = cfg.llm
+    model_name = model_cfg.model_name
+    adapter_name = model_cfg.adapter_name
+    mode = model_cfg.mode
+    main()

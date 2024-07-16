@@ -1,0 +1,4 @@
+llm:
+  adapter_name:
+  mode: anthropic
+  model_name: claude-3-sonnet-20240229

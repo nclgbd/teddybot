@@ -49,15 +49,15 @@ def format_data(data_file: str, model_name: str = "nous-hermes2"):
     return data_samples
 
 
-console = setup()
-data_file = ".data/csv/discord-4nkq7191ray.csv"
-model_name = "llama2-7b-chat"
-file_name = data_file.split("/")[-1][:-4]
+# console = setup()
+# data_file = ".data/csv/discord-4nkq7191ray.csv"
+# model_name = "llama2-7b-chat"
+# file_name = data_file.split("/")[-1][:-4]
 
-formatted_data = format_data(data_file, model_name)
+# formatted_data = format_data(data_file, model_name)
 
-import jsonlines
+# import jsonlines
 
-json_file = f".data/json/{file_name}-{model_name}.jsonl"
-with jsonlines.open(json_file, "w") as writer:
-    writer.write_all(formatted_data)
+# json_file = f".data/json/{file_name}-{model_name}.jsonl"
+# with jsonlines.open(json_file, "w") as writer:
+#     writer.write_all(formatted_data)

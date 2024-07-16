@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import argparse
 from dotenv import load_dotenv
 from google.cloud import firestore
+from omegaconf import OmegaConf
 from rich.markdown import Markdown
 
 import torch
@@ -33,33 +35,28 @@ def initialize_simple_chat(mode="local"):
             """
     )
     console.log("Initializing Chat Message History...")
-    if mode == "local":
-        chat_history = ChatMessageHistory(messages=[system_message])
-    elif mode == "firebase":
-        session_id = os.getenv("SESSION_ID")
-        project_id = os.getenv("PROJECT_ID")
-        collection_name = os.getenv("COLLECTION_NAME")
+    # if mode == "local":
+    chat_history = ChatMessageHistory(messages=[system_message])
+    # elif mode == "firebase":
+    #     session_id = os.getenv("SESSION_ID")
+    #     project_id = os.getenv("PROJECT_ID")
+    #     collection_name = os.getenv("COLLECTION_NAME")
 
-        client = firestore.Client(project=project_id)
-        chat_history = FirestoreChatMessageHistory(
-            session_id=session_id,
-            collection=collection_name,
-            client=client,
-        )
-    console.log("Chat History Initialized.")
+    #     client = firestore.Client(project=project_id)
+    #     chat_history = FirestoreChatMessageHistory(
+    #         session_id=session_id,
+    #         collection=collection_name,
+    #         client=client,
+    #     )
+    # console.log("Chat History Initialized.")
     console.log("Current Chat History:", chat_history.messages)
 
     return chat_history
 
 
-def create_llm(
-    mode="anthropic",
-    model_name="claude-3-sonnet-20240229",
-    adapter_name: str = None,
-    **kwargs
-):
+def create_llm():
     if mode == "anthropic":
-        llm = ChatAnthropic(model=model_name, **kwargs)
+        llm = ChatAnthropic(model=model_name)
 
     elif mode == "huggingface":
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
@@ -70,7 +67,7 @@ def create_llm(
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
         pipeline_kwargs = {
-            "device": "cpu",
+            "device": "cuda" if torch.cuda.is_available() else "cpu",
             # "load_in_4bit": True,
             "max_new_tokens": 128,
             "model": model,
@@ -86,12 +83,7 @@ def create_llm(
 
 def simple_chat():
     # llm = create_llm(mode="anthropic", model_name="claude-3-sonnet-20240229")
-    mode = "huggingface"
-    llm = create_llm(
-        mode=mode,
-        model_name="microsoft/Phi-3-mini-4k-instruct",
-        adapter_name="nclgbd/phi-3-mini-4k-instruct-teddi-finetuned",
-    )
+    llm = create_llm()
 
     # Initialize chat history
     chat_history = initialize_simple_chat()
@@ -115,7 +107,6 @@ def simple_chat():
 
                 ai_context = Markdown(ai_context)
                 console.print(ai_context)
-                # console.print(f"[bold purple]AI:[/bold purple] {ai_context}\n")
 
         anthropic_simple_chat()
     elif mode == "huggingface":
@@ -133,4 +124,20 @@ def simple_chat():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        "A chatbot version of 'TEDDI'. For discord app, use 'app.py'."
+    )
+    parser.add_argument(
+        "--config_file",
+        type=str,
+        default="configs/local.yaml",
+        help="Path to the configuration file.",
+    )
+    args: argparse.Namespace = parser.parse_args()
+    config_file: str = args.config_file
+    cfg = OmegaConf.load(config_file)
+    model_cfg: dict = cfg.llm
+    model_name: str = model_cfg.model_name
+    adapter_name: str = model_cfg.adapter_name
+    mode: str = model_cfg.mode
     simple_chat()
