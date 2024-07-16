@@ -1,10 +1,11 @@
 accelerate
-adapters
 datasets
 discord.py
 evaluate
 flash-attention
+hydra-core
 ipykernel
+jsonlines
 jupyter
 langchain
 langchain-anthropic
@@ -20,8 +21,6 @@ rich
 rich-cli
 scikit-learn
 spacy
-streamlit
-textual
 torch
 torchvision
 transformers
